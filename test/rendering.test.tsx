@@ -1,6 +1,7 @@
 import React from "react";
+import { renderToStaticMarkup } from "react-dom/server";
 import { describe, expect, it, vi } from "vitest";
-import { renderMarkdownToStaticMarkup } from "../src/index.js";
+import { renderMarkdownToStaticMarkup, Streamdown } from "../src/index.js";
 
 describe("Satteri block renderer", () => {
   it("renders basic Markdown", () => {
@@ -45,6 +46,12 @@ describe("Satteri block renderer", () => {
       },
     });
     expect(html).toBe('<h2 data-kind="override">Title</h2>');
+  });
+
+  it("exports a Streamdown component with static mode", () => {
+    const html = renderToStaticMarkup(<Streamdown mode="static"># Title</Streamdown>);
+    expect(html).toContain("<h1>Title</h1>");
+    expect(html).toContain("data-satteri-stream");
   });
 
   it("warns when unified plugins are passed", () => {

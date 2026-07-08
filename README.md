@@ -44,6 +44,12 @@ pnpm check
 pnpm bench
 ```
 
+Run the local parity workbench:
+
+```sh
+pnpm demo
+```
+
 ## Release
 
 See [docs/RELEASE.md](./docs/RELEASE.md).

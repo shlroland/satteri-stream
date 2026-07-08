@@ -1,4 +1,5 @@
 export {
+  Streamdown,
   Markdown,
   SatteriStreamdown,
   renderMarkdownToReact,
@@ -6,6 +7,8 @@ export {
   prepareStreamingBlocks,
 } from "./streamdown.js";
 export type {
+  StreamdownProps,
+  StreamdownMode,
   MarkdownProps,
   RenderOptions,
   RawHtmlMode,

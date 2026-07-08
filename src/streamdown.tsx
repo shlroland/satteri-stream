@@ -7,6 +7,7 @@ import { splitSourceBlocks, type SourceBlock } from "./split-source-blocks.js";
 import { getStreamingBlockState, type StreamingBlockState } from "./streaming-state.js";
 
 export type { ComponentsMap, RawHtmlMode };
+export type StreamdownMode = "streaming" | "static";
 
 export interface PreparedBlock extends SourceBlock {
   renderedSource: string;
@@ -23,11 +24,15 @@ export interface RenderOptions {
   rehypePlugins?: unknown[];
 }
 
-export interface MarkdownProps extends RenderOptions {
+export interface StreamdownProps extends RenderOptions {
   children: string;
-  mode?: "streaming" | "complete";
+  mode?: StreamdownMode;
   className?: string;
 }
+
+export type MarkdownProps = Omit<StreamdownProps, "mode"> & {
+  mode?: StreamdownMode | "complete";
+};
 
 export function prepareStreamingBlocks(source: string, options: RenderOptions = {}): PreparedBlock[] {
   const renderedSource =
@@ -63,7 +68,7 @@ export function renderMarkdownToStaticMarkup(source: string, options: RenderOpti
   return renderToStaticMarkup(<>{renderMarkdownToReact(source, options)}</>);
 }
 
-export const Markdown = memo(function Markdown({
+function StreamdownView({
   children,
   mode = "streaming",
   className,
@@ -75,6 +80,7 @@ export const Markdown = memo(function Markdown({
   remarkPlugins,
   rehypePlugins,
 }: MarkdownProps): ReactNode {
+  const normalizedMode: StreamdownMode = mode === "complete" ? "static" : mode;
   const options = useMemo<RenderOptions>(
     () => ({
       ...(components ? { components } : {}),
@@ -88,20 +94,20 @@ export const Markdown = memo(function Markdown({
     [components, rawHtml, features, parseIncompleteMarkdown, remendOptions, remarkPlugins, rehypePlugins],
   );
   const initialBlocks = useMemo(
-    () => (mode === "streaming" ? prepareStreamingBlocks(children, options) : sourceAsSingleBlock(children)),
-    [children, mode, options],
+    () => (normalizedMode === "streaming" ? prepareStreamingBlocks(children, options) : sourceAsSingleBlock(children)),
+    [children, normalizedMode, options],
   );
   const [displayBlocks, setDisplayBlocks] = useState(initialBlocks);
 
   useEffect(() => {
-    if (mode !== "streaming") {
+    if (normalizedMode !== "streaming") {
       setDisplayBlocks(sourceAsSingleBlock(children));
       return;
     }
 
     const nextBlocks = prepareStreamingBlocks(children, options);
     startTransition(() => setDisplayBlocks(nextBlocks));
-  }, [children, mode, options]);
+  }, [children, normalizedMode, options]);
 
   return (
     <div className={className} data-satteri-stream>
@@ -118,9 +124,17 @@ export const Markdown = memo(function Markdown({
       ))}
     </div>
   );
+}
+
+export const Streamdown = memo(function Streamdown(props: StreamdownProps): ReactNode {
+  return <StreamdownView {...props} />;
 });
 
-export const SatteriStreamdown = Markdown;
+export const Markdown = memo(function Markdown(props: MarkdownProps): ReactNode {
+  return <StreamdownView {...props} />;
+});
+
+export const SatteriStreamdown = Streamdown;
 
 const Block = memo(function Block({ source, options }: { source: string; options: RenderOptions }) {
   return <>{renderMarkdownToReact(source, options)}</>;
