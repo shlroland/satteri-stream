@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { createRoot } from "react-dom/client";
 import {
   prepareStreamingBlocks,
@@ -58,15 +58,101 @@ More text before the definition.
   },
 ];
 
+type StreamState = "idle" | "streaming" | "paused" | "done";
+
 function App() {
+  const [selectedSampleIndex, setSelectedSampleIndex] = useState(0);
   const [source, setSource] = useState(samples[0]?.source ?? "");
   const [mode, setMode] = useState<StreamdownMode>("streaming");
   const [rawHtml, setRawHtml] = useState<RawHtmlMode>("sanitize");
   const [parseIncompleteMarkdown, setParseIncompleteMarkdown] = useState(true);
+  const [streamState, setStreamState] = useState<StreamState>("idle");
+  const [streamCursor, setStreamCursor] = useState(source.length);
+  const [eventCount, setEventCount] = useState(0);
+  const [chunkSize, setChunkSize] = useState(12);
+  const [eventDelay, setEventDelay] = useState(140);
+  const timeoutRef = useRef<number | null>(null);
+  const streamTarget = samples[selectedSampleIndex]?.source ?? "";
   const blocks = useMemo(
     () => prepareStreamingBlocks(source, { rawHtml, parseIncompleteMarkdown }),
     [source, rawHtml, parseIncompleteMarkdown],
   );
+  const progress = streamTarget.length === 0 ? 0 : Math.min(100, (streamCursor / streamTarget.length) * 100);
+
+  const clearStreamTimeout = useCallback(() => {
+    if (timeoutRef.current !== null) {
+      window.clearTimeout(timeoutRef.current);
+      timeoutRef.current = null;
+    }
+  }, []);
+
+  const appendNextChunk = useCallback(() => {
+    setStreamCursor((cursor) => {
+      const nextCursor = Math.min(cursor + chunkSize, streamTarget.length);
+      setSource(streamTarget.slice(0, nextCursor));
+      setEventCount((count) => count + 1);
+      if (nextCursor >= streamTarget.length) {
+        setStreamState("done");
+      }
+      return nextCursor;
+    });
+  }, [chunkSize, streamTarget]);
+
+  useEffect(() => {
+    clearStreamTimeout();
+    if (streamState !== "streaming") {
+      return;
+    }
+
+    timeoutRef.current = window.setTimeout(appendNextChunk, eventDelay);
+    return clearStreamTimeout;
+  }, [appendNextChunk, clearStreamTimeout, eventDelay, streamState]);
+
+  function loadSample(index: number): void {
+    clearStreamTimeout();
+    const sampleSource = samples[index]?.source ?? "";
+    setSelectedSampleIndex(index);
+    setSource(sampleSource);
+    setStreamCursor(sampleSource.length);
+    setEventCount(0);
+    setStreamState("idle");
+  }
+
+  function startStream(): void {
+    clearStreamTimeout();
+    setMode("streaming");
+    setSource("");
+    setStreamCursor(0);
+    setEventCount(0);
+    setStreamState("streaming");
+  }
+
+  function pauseStream(): void {
+    clearStreamTimeout();
+    setStreamState("paused");
+  }
+
+  function resumeStream(): void {
+    if (streamCursor < streamTarget.length) {
+      setMode("streaming");
+      setStreamState("streaming");
+    }
+  }
+
+  function stepStream(): void {
+    clearStreamTimeout();
+    setMode("streaming");
+    setStreamState("paused");
+    appendNextChunk();
+  }
+
+  function resetStream(): void {
+    clearStreamTimeout();
+    setSource("");
+    setStreamCursor(0);
+    setEventCount(0);
+    setStreamState("paused");
+  }
 
   return (
     <main className="app-shell">
@@ -112,16 +198,94 @@ function App() {
           <div className="pane-head">
             <h2>Input</h2>
             <div className="sample-row">
-              {samples.map((sample) => (
-                <button key={sample.label} type="button" onClick={() => setSource(sample.source)}>
+              {samples.map((sample, index) => (
+                <button
+                  key={sample.label}
+                  type="button"
+                  aria-pressed={selectedSampleIndex === index}
+                  onClick={() => loadSample(index)}
+                >
                   {sample.label}
                 </button>
               ))}
             </div>
           </div>
+          <div className="stream-panel" aria-label="SSE stream simulator">
+            <div className="stream-actions">
+              <button type="button" onClick={startStream}>
+                Start SSE
+              </button>
+              <button type="button" disabled={streamState !== "streaming"} onClick={pauseStream}>
+                Pause
+              </button>
+              <button
+                type="button"
+                disabled={streamState !== "paused" || streamCursor >= streamTarget.length}
+                onClick={resumeStream}
+              >
+                Resume
+              </button>
+              <button type="button" disabled={streamCursor >= streamTarget.length} onClick={stepStream}>
+                Step
+              </button>
+              <button type="button" onClick={resetStream}>
+                Reset
+              </button>
+            </div>
+            <div className="stream-settings">
+              <label>
+                <span>chunk</span>
+                <input
+                  type="range"
+                  min="1"
+                  max="48"
+                  value={chunkSize}
+                  onChange={(event) => setChunkSize(Number(event.target.value))}
+                />
+                <output>{chunkSize}</output>
+              </label>
+              <label>
+                <span>delay</span>
+                <input
+                  type="range"
+                  min="30"
+                  max="600"
+                  step="10"
+                  value={eventDelay}
+                  onChange={(event) => setEventDelay(Number(event.target.value))}
+                />
+                <output>{eventDelay}ms</output>
+              </label>
+            </div>
+            <div className="stream-meter" aria-label="stream progress">
+              <span style={{ width: `${progress}%` }} />
+            </div>
+            <dl className="stream-stats">
+              <div>
+                <dt>state</dt>
+                <dd>{streamState}</dd>
+              </div>
+              <div>
+                <dt>events</dt>
+                <dd>{eventCount}</dd>
+              </div>
+              <div>
+                <dt>cursor</dt>
+                <dd>
+                  {streamCursor}/{streamTarget.length}
+                </dd>
+              </div>
+            </dl>
+          </div>
           <textarea
             value={source}
-            onChange={(event) => setSource(event.target.value)}
+            onChange={(event) => {
+              clearStreamTimeout();
+              setSource(event.target.value);
+              setStreamCursor(event.target.value.length);
+              setEventCount(0);
+              setStreamState("idle");
+            }}
             spellCheck={false}
             aria-label="Markdown source"
           />

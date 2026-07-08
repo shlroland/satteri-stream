@@ -40,6 +40,11 @@ button:hover {
   border-color: #607d8b;
 }
 
+button:disabled {
+  cursor: not-allowed;
+  opacity: 0.48;
+}
+
 .app-shell {
   min-height: 100vh;
   padding: 1.25rem;
@@ -108,6 +113,11 @@ p,
   color: #ffffff;
 }
 
+.sample-row button[aria-pressed="true"] {
+  border-color: #0f6cbd;
+  background: #e7f1fb;
+}
+
 .field,
 .toggle {
   display: inline-flex;
@@ -148,6 +158,77 @@ p,
   justify-content: space-between;
   gap: 0.75rem;
   padding-bottom: 0.55rem;
+}
+
+.stream-panel {
+  display: grid;
+  gap: 0.65rem;
+  margin-bottom: 0.75rem;
+  border: 1px solid #d9dee5;
+  border-radius: 8px;
+  background: #ffffff;
+  padding: 0.75rem;
+}
+
+.stream-actions,
+.stream-settings,
+.stream-stats {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.55rem;
+  align-items: center;
+}
+
+.stream-settings label {
+  display: grid;
+  grid-template-columns: 3.2rem minmax(8rem, 1fr) 4.4rem;
+  gap: 0.45rem;
+  align-items: center;
+  min-width: min(100%, 18rem);
+}
+
+.stream-settings span,
+.stream-stats dt {
+  color: #5e6671;
+  font-size: 0.78rem;
+}
+
+.stream-settings input {
+  width: 100%;
+  accent-color: #0f6cbd;
+}
+
+.stream-settings output,
+.stream-stats dd {
+  margin: 0;
+  font-family: "SFMono-Regular", Consolas, "Liberation Mono", monospace;
+  font-size: 0.82rem;
+}
+
+.stream-meter {
+  overflow: hidden;
+  height: 0.45rem;
+  border-radius: 999px;
+  background: #e8edf3;
+}
+
+.stream-meter span {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+  background: #0f6cbd;
+  transition: width 120ms linear;
+}
+
+.stream-stats {
+  justify-content: space-between;
+  margin: 0;
+}
+
+.stream-stats div {
+  display: grid;
+  gap: 0.15rem;
+  min-width: 5.5rem;
 }
 
 textarea,
