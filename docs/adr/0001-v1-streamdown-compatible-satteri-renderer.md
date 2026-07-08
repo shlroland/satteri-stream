@@ -46,7 +46,7 @@ V1 should migrate Streamdown's benchmark coverage and run it as a single benchma
 
 - `markdown.bench.ts`
 - `parse-blocks.bench.ts`
-- `streamdown-vs-react-markdown.bench.ts`
+- `streamdown-vs-satteri-stream.bench.ts`
 - `table-utils.bench.ts`
 
 The migrated benchmark suite should compare the Satteri renderer against Streamdown-shaped scenarios rather than only microbenchmarking Satteri parse calls.

@@ -1,5 +1,8 @@
 import { bench, describe } from "vitest";
-import { renderMarkdownToStaticMarkup } from "../src/index.js";
+import React from "react";
+import { renderToStaticMarkup } from "react-dom/server";
+import { Streamdown } from "streamdown";
+import { Markdown, renderMarkdownToStaticMarkup } from "../src/index.js";
 
 const markdown = `# Benchmark
 
@@ -18,7 +21,15 @@ console.log("hello");
 `;
 
 describe("markdown rendering benchmark", () => {
-  bench("Satteri-backed static render", () => {
+  bench("Satteri Stream block renderer", () => {
     renderMarkdownToStaticMarkup(markdown);
+  });
+
+  bench("Satteri Stream React component SSR", () => {
+    renderToStaticMarkup(React.createElement(Markdown, null, markdown));
+  });
+
+  bench("Streamdown React component SSR", () => {
+    renderToStaticMarkup(React.createElement(Streamdown, null, markdown));
   });
 });

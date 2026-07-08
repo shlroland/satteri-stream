@@ -1,5 +1,8 @@
 import { bench, describe } from "vitest";
-import { renderMarkdownToStaticMarkup } from "../src/index.js";
+import React from "react";
+import { renderToStaticMarkup } from "react-dom/server";
+import { Streamdown } from "streamdown";
+import { Markdown, renderMarkdownToStaticMarkup } from "../src/index.js";
 
 const table = [
   "| Name | Value | Notes |",
@@ -10,7 +13,15 @@ const table = [
 ].join("\n");
 
 describe("table rendering benchmark", () => {
-  bench("Satteri GFM table render", () => {
+  bench("Satteri Stream table block renderer", () => {
     renderMarkdownToStaticMarkup(table);
+  });
+
+  bench("Satteri Stream table component SSR", () => {
+    renderToStaticMarkup(React.createElement(Markdown, null, table));
+  });
+
+  bench("Streamdown table component SSR", () => {
+    renderToStaticMarkup(React.createElement(Streamdown, null, table));
   });
 });

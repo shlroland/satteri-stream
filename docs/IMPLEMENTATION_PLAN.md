@@ -149,7 +149,7 @@ Adapt Streamdown's benchmark coverage into this project as parity benchmarks:
 
 - `markdown.bench.ts`
 - `parse-blocks.bench.ts`
-- `streamdown-vs-react-markdown.bench.ts`
+- `streamdown-vs-satteri-stream.bench.ts`
 - `table-utils.bench.ts`, only if matching utilities exist
 
 Benchmark goals:
