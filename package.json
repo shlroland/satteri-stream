@@ -1,0 +1,39 @@
+{
+  "name": "satteri-stream",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "A Satteri-backed Streamdown-compatible streaming Markdown renderer.",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    }
+  },
+  "scripts": {
+    "build": "tsc --project tsconfig.json",
+    "test": "vitest run",
+    "bench": "vitest bench --run",
+    "check": "pnpm build && pnpm test"
+  },
+  "dependencies": {
+    "domhandler": "^6.0.1",
+    "htmlparser2": "^12.0.0",
+    "katex": "^0.16.22",
+    "marked": "^17.0.1",
+    "react": "^19.2.5",
+    "react-dom": "^19.2.5",
+    "remend": "^1.3.0",
+    "satteri": "^0.9.4"
+  },
+  "devDependencies": {
+    "@types/katex": "^0.16.8",
+    "@types/node": "^25.5.0",
+    "@types/react": "^19.2.14",
+    "@types/react-dom": "^19.2.3",
+    "typescript": "^5.9.3",
+    "vitest": "^4.0.15"
+  }
+}
