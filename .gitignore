@@ -2,3 +2,4 @@ satteri/
 node_modules/
 dist/
 coverage/
+.pnpm-store/
