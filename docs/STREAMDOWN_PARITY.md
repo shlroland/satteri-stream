@@ -19,12 +19,14 @@ It is not yet a complete Streamdown-compatible drop-in replacement.
   - Keep `Markdown` as an alias only if useful for migration.
 
 - [ ] Implement ReactMarkdown-compatible `components`.
-  - Support intrinsic element component overrides.
-  - Pass the HAST `node` prop to custom components.
-  - Preserve native element props.
-  - Support the `inlineCode` custom component.
-  - Reproduce Streamdown's `pre` / `code` split for block code vs inline code.
-  - Merge user components with Streamdown-style default components.
+  - [x] Support intrinsic element component overrides.
+  - [x] Pass the HAST `node` prop to custom components.
+  - [x] Preserve native element props.
+  - [x] Support the `inlineCode` custom component.
+  - [x] Reproduce Streamdown's `pre` / `code` split for block code vs inline code.
+  - [ ] Tighten exported component prop types beyond the current broad `ElementType` map.
+  - [ ] Merge user components with Streamdown-style default components.
+  - [ ] Re-run the full validation suite after the parity demo `inlineCode` example change.
 
 - [ ] Implement Streamdown's element filtering and URL props.
   - `allowedElements`

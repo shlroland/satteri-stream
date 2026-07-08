@@ -23,7 +23,12 @@ export function renderHastToReact(root: HastNode, options: RenderHastOptions = {
   return renderNode(root, options, "root");
 }
 
-function renderNode(node: HastNode, options: RenderHastOptions, key: React.Key): ReactNode {
+function renderNode(
+  node: HastNode,
+  options: RenderHastOptions,
+  key: React.Key,
+  parent?: HastElement,
+): ReactNode {
   switch (node.type) {
     case "root":
       return renderChildren((node as HastRoot).children ?? [], options);
@@ -32,7 +37,7 @@ function renderNode(node: HastNode, options: RenderHastOptions, key: React.Key):
     case "raw":
       return renderRaw((node as HastRaw).value, options.rawHtml ?? "sanitize", key);
     case "element":
-      return renderElement(node as HastElement, options, key);
+      return renderElement(node as HastElement, options, key, parent);
     case "comment":
     case "doctype":
       return null;
@@ -45,7 +50,12 @@ function renderChildren(children: HastNode[], options: RenderHastOptions): React
   return children.map((child, index) => renderNode(child, options, index));
 }
 
-function renderElement(node: HastElement, options: RenderHastOptions, key: React.Key): ReactNode {
+function renderElement(
+  node: HastElement,
+  options: RenderHastOptions,
+  key: React.Key,
+  parent?: HastElement,
+): ReactNode {
   if (node.tagName === "script" || node.tagName === "style") {
     return null;
   }
@@ -59,17 +69,19 @@ function renderElement(node: HastElement, options: RenderHastOptions, key: React
     return math;
   }
 
-  const Component = options.components?.[node.tagName] ?? node.tagName;
+  const componentName = node.tagName === "code" && parent?.tagName !== "pre" ? "inlineCode" : node.tagName;
+  const Component = options.components?.[componentName] ?? options.components?.[node.tagName] ?? node.tagName;
+  const isCustomComponent = typeof Component !== "string";
   const props = sanitizeProperties(node.tagName, node.properties as Record<string, unknown> | undefined);
   const children = (node.children ?? []) as HastNode[];
   const renderedChildren =
     (options.rawHtml ?? "sanitize") === "sanitize" && children.some((child) => child.type === "raw")
       ? renderSanitizedHtmlFragment(serializeRawAwareChildren(children), options)
-      : renderChildren(children, options);
+      : children.map((child, index) => renderNode(child, options, index, node));
 
   return React.createElement(
     Component,
-    { ...props, key },
+    { ...props, ...(isCustomComponent ? { node } : {}), key },
     ...renderedChildren,
   );
 }

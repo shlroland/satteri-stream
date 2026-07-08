@@ -311,6 +311,11 @@ function App() {
                     {children}
                   </a>
                 ),
+                inlineCode: ({ children, className, ...props }) => (
+                  <code {...props} className={className ? `${className} demo-inline-code` : "demo-inline-code"}>
+                    {children}
+                  </code>
+                ),
                 code: ({ children, className, ...props }) => (
                   <code {...props} className={className ? `${className} demo-code` : "demo-code"}>
                     {children}

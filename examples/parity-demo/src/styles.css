@@ -297,10 +297,15 @@ textarea {
   padding: 0.85rem;
 }
 
-.demo-code {
+.demo-code,
+.demo-inline-code {
   border-radius: 4px;
   background: #e9eef5;
   padding: 0.08rem 0.25rem;
+}
+
+.demo-inline-code {
+  border: 1px solid #cfd8e3;
 }
 
 pre .demo-code {
