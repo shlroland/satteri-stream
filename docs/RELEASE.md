@@ -2,6 +2,17 @@
 
 This project releases from `main` with GitHub Actions, release-please, and npm Trusted Publishing.
 
+## Bootstrap Status
+
+The first package version was published manually:
+
+- npm package: `satteri-stream@0.1.0`
+- npm dist-tag: `latest -> 0.1.0`
+- Git tag: `v0.1.0`
+- GitHub release: `v0.1.0`
+
+This manual bootstrap is only needed once. Future package releases should be created by the GitHub Actions release workflow.
+
 ## Branches
 
 - `dev`: daily development branch.
@@ -28,6 +39,7 @@ Configure the package on npm with a trusted publisher:
 - Repository: `satteri-stream`
 - Workflow filename: `release.yml`
 - Package name: `satteri-stream`
+- Environment: leave empty unless the workflow later adds a GitHub Actions environment
 
 The workflow grants:
 
@@ -38,6 +50,16 @@ permissions:
 ```
 
 `id-token: write` lets npm exchange GitHub's OIDC identity for a short-lived publish credential. The repository should be public for npm provenance.
+
+## Normal Release Flow
+
+1. Commit changes on `dev` using Conventional Commits.
+2. Open a pull request from `dev` into `main`.
+3. Merge the pull request after the required CI check passes.
+4. The `Release` workflow runs on `main`.
+5. release-please opens or updates a release PR when `main` contains releasable commits.
+6. Merge the release PR.
+7. GitHub Actions creates the GitHub release and publishes the package to npm through Trusted Publishing.
 
 ## Local Checks
 
