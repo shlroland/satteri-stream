@@ -103,10 +103,14 @@ function App() {
     if (streamState !== "streaming") {
       return;
     }
+    if (streamCursor >= streamTarget.length) {
+      setStreamState("done");
+      return;
+    }
 
     timeoutRef.current = window.setTimeout(appendNextChunk, eventDelay);
     return clearStreamTimeout;
-  }, [appendNextChunk, clearStreamTimeout, eventDelay, streamState]);
+  }, [appendNextChunk, clearStreamTimeout, eventDelay, streamCursor, streamState, streamTarget.length]);
 
   function loadSample(index: number): void {
     clearStreamTimeout();
